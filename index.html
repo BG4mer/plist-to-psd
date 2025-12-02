@@ -1,302 +1,755 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>plist → PSD (preserved layer) — GitHub Pages-ready</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>plist → PSD (full interactive) — Go ALL OUT</title>
 
-  <!-- Minimal styling (feel free to drop into gh-pages) -->
-  <style>
-    :root{
-      --bg:#0f1724; --card:#0b1220; --muted:#94a3b8; --accent:#7c3aed;
-      color-scheme: dark;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;background:linear-gradient(180deg,var(--bg),#071229);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; color:#e6eef8; padding:28px;}
-    .wrap{max-width:980px;margin:0 auto;display:grid;grid-template-columns:1fr 420px;gap:18px}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.03); padding:16px; border-radius:12px; box-shadow:0 6px 24px rgba(2,6,23,0.6)}
-    h1{font-size:18px;margin:4px 0 12px}
-    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-    textarea{width:100%;height:420px;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:#031025;color:#dff1ff; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, monospace; font-size:13px}
-    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-    button{background:linear-gradient(90deg,var(--accent),#5b21b6);border:0;padding:10px 12px;border-radius:10px;color:white;font-weight:600;cursor:pointer}
-    .mutebtn{background:transparent;border:1px solid rgba(255,255,255,0.04); color:var(--muted); padding:8px 10px;border-radius:8px}
-    .right{display:flex;flex-direction:column;gap:12px}
-    .meta{font-size:13px;color:var(--muted);padding:12px;border-radius:8px;background:rgba(255,255,255,0.01)}
-    input[type=file]{display:block}
-    .small{font-size:12px;color:var(--muted)}
-    .log{height:160px;overflow:auto;padding:10px;border-radius:8px;background:#041423;border:1px solid rgba(255,255,255,0.02);font-family:ui-monospace,monospace;font-size:12px; color:#cfeefe}
-    footer{grid-column:1/-1;margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
-    @media (max-width:980px){.wrap{grid-template-columns:1fr;}.right{order:2}}
-  </style>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg-1:#071021; --bg-2:#07162a; --card:#071827;
+    --muted:#97a6bf; --glow:#7c3aed; --accent:#00d4ff;
+    color-scheme: dark;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+    background:radial-gradient(1200px 600px at 10% 10%, rgba(124,58,237,0.12), transparent),
+               linear-gradient(180deg,var(--bg-1),var(--bg-2));
+    color:#e6eef8;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    padding:18px;
+  }
+
+  .wrap{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 420px;gap:18px}
+  @media (max-width:1160px){ .wrap{grid-template-columns:1fr; } .right{order:2} }
+
+  .card{
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border:1px solid rgba(255,255,255,0.03);
+    padding:16px;border-radius:14px;box-shadow:0 10px 40px rgba(2,6,23,0.6);
+  }
+
+  header{display:flex;gap:12px;align-items:center;margin-bottom:8px}
+  h1{font-size:18px;margin:0}
+  .sub{color:var(--muted);font-size:13px}
+
+  textarea{width:100%;height:240px;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);
+    background:#031025;color:#dff1ff; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, monospace; font-size:13px; resize:vertical}
+
+  .controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center}
+  button, .btn{
+    background:linear-gradient(90deg,var(--glow),#5b21b6);border:0;padding:10px 12px;border-radius:12px;color:white;font-weight:700;cursor:pointer;
+    box-shadow:0 6px 18px rgba(124,58,237,0.15);
+  }
+  .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04); color:var(--muted); font-weight:600}
+  .small{font-size:13px;color:var(--muted)}
+  input[type=file]{display:block}
+
+  .right{display:flex;flex-direction:column;gap:12px}
+
+  .frames-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;max-height:420px;overflow:auto;padding:8px;border-radius:10px;background:#041423}
+  @media (min-width:800px){ .frames-grid{grid-template-columns:repeat(1,1fr)} }
+
+  .frame{
+    display:flex;gap:8px;align-items:center;padding:8px;border-radius:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+    border:1px solid rgba(255,255,255,0.02);cursor:grab;user-select:none;
+  }
+  .frame img{width:86px;height:34px;object-fit:cover;border-radius:6px;border:1px solid rgba(255,255,255,0.03)}
+  .frame .meta{font-family:ui-monospace,monospace;font-size:12px;color:var(--muted)}
+  .frame .title{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  #preview-canvas{width:100%;background:#000;border-radius:8px;display:block}
+
+  .log{height:140px;overflow:auto;padding:10px;border-radius:8px;background:#041423;border:1px solid rgba(255,255,255,0.02);font-family:ui-monospace,monospace;font-size:12px; color:#cfeefe}
+
+  .row{display:flex;gap:10px;align-items:center}
+  .row.space{justify-content:space-between}
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+
+  .progress{height:8px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden}
+  .progress > i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--glow));transition:width .35s ease}
+
+  /* subtle animated accents */
+  .neon{box-shadow:0 6px 30px rgba(124,58,237,0.12)}
+  .glow-border{border:1px solid rgba(124,58,237,0.06);}
+
+  /* drag handle */
+  .handle{width:18px;height:18px;display:inline-block;background:linear-gradient(180deg,#0b1220,#081226);border-radius:4px;border:1px solid rgba(255,255,255,0.03);opacity:0.7}
+
+  .toggle{display:inline-flex;align-items:center;gap:8px}
+  .chip{padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.02);font-size:13px;color:var(--muted)}
+
+  footer{grid-column:1/-1;margin-top:6px;text-align:center;color:var(--muted);font-size:12px}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>plist → PSD (preserve plist in a PSD layer)</h1>
 
-      <label for="plist">Paste plist XML (or drop a .plist file)</label>
-      <textarea id="plist" spellcheck="false" placeholder="Paste your plist XML here..."></textarea>
+<div class="wrap">
 
-      <div style="display:flex;gap:10px;margin-top:10px;align-items:center">
-        <label class="small">Optional: upload sprite sheet (PNG)</label>
-        <input id="sheet" type="file" accept="image/png,image/*" style="margin-left:auto" />
+  <div class="card">
+    <header>
+      <div>
+        <h1>plist → PSD — Ultra Interactive Generator</h1>
+        <div class="sub">Paste .plist XML, upload sprite sheet PNG (optional), slice, preview, reorder, and export a PSD with preserved plist + embedded image layers.</div>
       </div>
+    </header>
 
-      <div class="controls">
-        <button id="gen">Generate PSD</button>
-        <button id="download-raw" class="mutebtn">Download plist (.plist)</button>
-        <button id="preview" class="mutebtn">Preview parsed frames</button>
-        <div style="margin-left:auto" class="small">Result: single PSD with preserved plist in its top text layer + one text layer per frame</div>
-      </div>
+    <label class="small">1. Paste plist XML (or drop a .plist file)</label>
+    <textarea id="plist" spellcheck="false" placeholder='Paste your plist XML here... (sample from message works)'></textarea>
 
-      <div style="margin-top:12px">
-        <label class="small">Log / status</label>
-        <div id="log" class="log">Ready.</div>
+    <div style="display:flex;gap:12px;margin-top:8px;align-items:center">
+      <label class="small">2. Upload sprite sheet (optional)</label>
+      <input id="sheet" type="file" accept="image/png,image/*" style="margin-left:auto" />
+      <div style="width:12px"></div>
+      <button id="auto-parse" class="btn-ghost">Auto-parse & preview</button>
+    </div>
+
+    <div class="options">
+      <label class="small">Layer naming prefix<input id="prefix" placeholder="optional prefix (e.g. GJ_)" style="width:100%;margin-top:6px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:#e6eef8"></label>
+      <label class="small">Scale exported layers<input id="scale" type="range" min="0.25" max="2" step="0.25" value="1" style="width:100%"></label>
+    </div>
+
+    <div class="controls">
+      <button id="parse" class="btn">Parse plist</button>
+      <button id="slice" class="btn">Slice sprite sheet → thumbnails</button>
+      <button id="generate" class="btn neon">Export PSD (embed images)</button>
+      <button id="download-zip" class="btn-ghost">Export ZIP (PSD + assets fallback)</button>
+
+      <div style="margin-left:auto" class="row">
+        <div class="chip" id="frames-count">frames: 0</div>
+        <div class="chip" id="embedded-count">embedded: 0</div>
       </div>
     </div>
 
-    <div class="right">
-      <div class="card meta">
-        <strong>How this works</strong>
-        <p class="small" style="margin:8px 0 0">
-          The page parses the plist XML, creates a PSD binary in the browser, then downloads it. The original plist is embedded as a top text layer (preserved), and every frame entry becomes its own text layer with the frame metadata.
-        </p>
+    <div style="margin-top:12px">
+      <label class="small">Preview / Canvas</label>
+      <canvas id="preview-canvas" width="1024" height="512" style="height:180px"></canvas>
+    </div>
+
+    <div style="margin-top:12px" class="row space">
+      <div style="width:52%">
+        <label class="small">Selection</label>
+        <div class="row" style="margin-top:6px;gap:8px">
+          <button id="select-all" class="btn-ghost">Select all</button>
+          <button id="deselect-all" class="btn-ghost">Deselect</button>
+          <button id="invert" class="btn-ghost">Invert</button>
+        </div>
       </div>
 
-      <div class="card">
-        <label class="small">Parsed frames (click Preview)</label>
-        <div id="frames" style="max-height:320px;overflow:auto;padding:10px;border-radius:8px;background:#041423;border:1px solid rgba(255,255,255,0.02);font-family:ui-monospace,monospace;font-size:12px;color:#cfeefe"></div>
-      </div>
-
-      <div class="card small">
-        Notes:
-        <ul>
-          <li>The generator creates text layers only (no image layers). Use the sprite sheet upload to keep filename references — embedding raster images into PSD layers is possible but requires extra steps; ask if you want that and I can add it.</li>
-          <li>Files produced are directly downloadable and suitable for committing to a GitHub repo and serving via GitHub Pages.</li>
-        </ul>
+      <div style="width:44%">
+        <label class="small">Preview options</label>
+        <div class="row" style="margin-top:6px;gap:8px;justify-content:flex-end">
+          <label class="toggle small"><input type="checkbox" id="show-names" checked> show frame names</label>
+          <label class="toggle small"><input type="checkbox" id="embed-plist" checked> embed plist layer</label>
+        </div>
       </div>
     </div>
 
-    <footer class="small">Drop your plist into the textarea, then press Generate PSD</footer>
+    <div style="margin-top:12px">
+      <label class="small">Activity log</label>
+      <div id="log" class="log">Ready.</div>
+    </div>
+
   </div>
 
-  <!-- runtime libs (browser ESM) -->
-  <script type="module">
-    // ag-psd (browser ESM). If you want a specific version, replace the path with a versioned URL.
-    import * as agpsd from 'https://unpkg.com/ag-psd@6.4.1/dist/ag-psd.esm.js';
+  <div class="right">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div><strong>Parsed frames</strong><div class="small">Drag to reorder, toggle to include</div></div>
+        <div class="small">Tip: reorder determines layer stack (top = last)</div>
+      </div>
 
-    const plistEl = document.getElementById('plist');
-    const sheetIn = document.getElementById('sheet');
-    const genBtn = document.getElementById('gen');
-    const dlRaw = document.getElementById('download-raw');
-    const previewBtn = document.getElementById('preview');
-    const framesBox = document.getElementById('frames');
-    const log = document.getElementById('log');
+      <div id="frames-grid" class="frames-grid"></div>
 
-    function logMsg(...args){ log.textContent = args.join(' ') + '\\n' + log.textContent; }
+      <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+        <div style="flex:1">
+          <div class="small">Progress</div>
+          <div class="progress neon" style="margin-top:6px"><i id="progress-bar"></i></div>
+        </div>
+        <div style="width:54px;text-align:right" class="small" id="progress-percent">0%</div>
+      </div>
+    </div>
 
-    // parse plist XML into a JS object (limited to the kinds of structure in your sample)
-    function parsePlistXml(xmlText){
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(xmlText.trim(), 'application/xml');
-      if (doc.querySelector('parsererror')) throw new Error('Invalid XML / plist');
-      // recursive helper
-      function nodeToValue(node){
-        const tag = node.tagName;
-        if (tag === 'dict'){
-          const out = {};
-          const children = Array.from(node.children);
-          for (let i=0;i<children.length; i+=2){
-            const key = children[i]; const val = children[i+1];
-            if (!key || !val) continue;
-            out[key.textContent] = nodeToValue(val);
-          }
-          return out;
+    <div class="card small">
+      <strong>Extras</strong>
+      <ul>
+        <li>Preview PNG generation (automatically produced and included in ZIP/PSD)</li>
+        <li>Reorder frames to control PSD layer order (drag handle)</li>
+        <li>Optionally include the original plist as a preserved text layer</li>
+        <li>Fallback ZIP if PSD generation with embedded images fails</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="small">Parsed metadata</div>
+      <pre id="metadata-preview" style="font-family:ui-monospace,monospace;font-size:12px;color:var(--muted);white-space:pre-wrap;"></pre>
+    </div>
+  </div>
+
+  <footer class="small">All-in-one interactive generator — extremely beefed up and interactive. No signups. Local processing.</footer>
+</div>
+
+<!-- libs: ag-psd, sortable, JSZip -->
+<script type="module">
+  import * as agpsd from 'https://unpkg.com/ag-psd@6.4.1/dist/ag-psd.esm.js';
+  import Sortable from 'https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/modular/sortable.esm.js';
+  import JSZip from 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';
+
+  // Elements
+  const plistEl = document.getElementById('plist');
+  const sheetIn = document.getElementById('sheet');
+  const parseBtn = document.getElementById('parse');
+  const sliceBtn = document.getElementById('slice');
+  const generateBtn = document.getElementById('generate');
+  const downloadZipBtn = document.getElementById('download-zip');
+  const framesGrid = document.getElementById('frames-grid');
+  const metadataPreview = document.getElementById('metadata-preview');
+  const logEl = document.getElementById('log');
+  const framesCountEl = document.getElementById('frames-count');
+  const embeddedCountEl = document.getElementById('embedded-count');
+  const progressBar = document.getElementById('progress-bar');
+  const progressPct = document.getElementById('progress-percent');
+  const previewCanvas = document.getElementById('preview-canvas');
+  const previewCtx = previewCanvas.getContext('2d');
+  const selectAllBtn = document.getElementById('select-all');
+  const deselectAllBtn = document.getElementById('deselect-all');
+  const invertBtn = document.getElementById('invert');
+  const showNamesCheckbox = document.getElementById('show-names');
+  const embedPlistCheckbox = document.getElementById('embed-plist');
+  const prefixInput = document.getElementById('prefix');
+  const scaleInput = document.getElementById('scale');
+  const autoParseBtn = document.getElementById('auto-parse');
+
+  // state
+  let parsedPlist = null;
+  let spriteImage = null; // HTMLImageElement of uploaded sheet
+  let framesArr = []; // [{name, data: {spriteSize, spriteOffset, textureRect, textureRotated}, thumbnail:Blob, imageData:ImageData, include:true}]
+  let sortable = null;
+
+  // util logging
+  function log(...args){
+    const ts = new Date().toLocaleTimeString();
+    logEl.textContent = `[${ts}] ${args.join(' ')}\n` + logEl.textContent;
+  }
+
+  // plist parser (robust for the sample structure)
+  function parsePlistXml(xmlText){
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(xmlText.trim(), 'application/xml');
+    if (doc.querySelector('parsererror')) throw new Error('Invalid XML / plist');
+    function nodeToValue(node){
+      const tag = node.tagName;
+      if (!tag) return null;
+      if (tag === 'dict'){
+        const out = {};
+        const children = Array.from(node.children);
+        for (let i=0;i<children.length;i+=2){
+          const k = children[i];
+          const v = children[i+1];
+          if (!k || !v) continue;
+          out[k.textContent] = nodeToValue(v);
         }
-        if (tag === 'array'){
-          return Array.from(node.children).map(n => nodeToValue(n));
-        }
-        if (tag === 'true') return true;
-        if (tag === 'false') return false;
-        if (tag === 'integer') return parseInt(node.textContent,10);
-        if (tag === 'string') return node.textContent;
-        // fallback: try named child
-        return node.textContent || null;
+        return out;
       }
-      const plist = doc.querySelector('plist > dict');
-      if (!plist) throw new Error('No top-level dict found');
-      return nodeToValue(plist);
+      if (tag === 'array') return Array.from(node.children).map(n => nodeToValue(n));
+      if (tag === 'true') return true;
+      if (tag === 'false') return false;
+      if (tag === 'integer') return parseInt(node.textContent,10);
+      if (tag === 'string') return node.textContent;
+      return node.textContent || null;
     }
+    const plist = doc.querySelector('plist > dict') || doc.querySelector('plist');
+    if (!plist) throw new Error('No top-level dict found');
+    return nodeToValue(plist);
+  }
 
-    // Build a PSD using ag-psd. We'll make a root psd with:
-// - a top text layer containing the raw plist (preserved layer)
-// - one text layer per frame with its name + key properties
-// Layer order: frames at the bottom, plist text on top
-    function buildPsdFromPlist(plistText, parsed){
-      const framesDict = parsed.frames || {};
-      const frameKeys = Object.keys(framesDict);
+  // parse button
+  parseBtn.addEventListener('click', ()=>{
+    const t = plistEl.value.trim();
+    if (!t){ log('No plist found'); return; }
+    try{
+      parsedPlist = parsePlistXml(t);
+      metadataPreview.textContent = JSON.stringify(parsedPlist.metadata || {}, null, 2);
+      log('Plist parsed successfully.');
+      buildFramesArray(parsedPlist);
+      renderFramesGrid();
+    }catch(e){
+      log('Parse error:', e.message);
+      metadataPreview.textContent = 'Parse error: ' + e.message;
+    }
+  });
 
-      // canvas size — use metadata.size if present
-      let canvasSize = {width: 1024, height: 1024};
-      if (parsed.metadata && parsed.metadata.size){
-        const m = parsed.metadata.size.replace(/[{}]/g,'').split(',');
-        const w = parseInt(m[0],10), h = parseInt(m[1],10);
-        if (!isNaN(w) && !isNaN(h)) canvasSize = {width:w, height:h};
+  autoParseBtn.addEventListener('click', ()=>{
+    // tries to parse right away and show preview
+    parseBtn.click();
+    sliceBtn.click();
+  });
+
+  // Build framesArr from parsedPlist.frames
+  function buildFramesArray(parsed){
+    framesArr = [];
+    const frames = parsed.frames || {};
+    for (const name of Object.keys(frames)){
+      framesArr.push({
+        name,
+        data: frames[name],
+        include: true,
+        thumbnail: null,
+        imageData: null
+      });
+    }
+    framesCountEl.textContent = 'frames: ' + framesArr.length;
+    embeddedCountEl.textContent = 'embedded: 0';
+  }
+
+  // handle sprite sheet upload
+  sheetIn.addEventListener('change', async (e)=>{
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const url = URL.createObjectURL(f);
+    const img = new Image();
+    img.onload = () => {
+      spriteImage = img;
+      previewCanvas.width = img.naturalWidth;
+      previewCanvas.height = img.naturalHeight;
+      previewCtx.clearRect(0,0,previewCanvas.width,previewCanvas.height);
+      previewCtx.drawImage(img,0,0);
+      log('Sprite sheet loaded:', f.name, `(${img.naturalWidth}x${img.naturalHeight})`);
+    };
+    img.onerror = ()=>{ log('Failed to load sprite sheet image'); URL.revokeObjectURL(url); };
+    img.src = url;
+  });
+
+  // parse helper: parse a "{x,y}" or "{{x,y},{w,h}}" style string into numbers
+  function parseBracedNumbers(s){
+    if (!s) return null;
+    // remove whitespace
+    s = s.replace(/\s+/g,'');
+    // cases: {x,y} or {{x,y},{w,h}}
+    const nums = s.replace(/[{}]/g, '').split(',').map(n=>parseFloat(n));
+    return nums;
+  }
+
+  // slice function: read framesArr and produce thumbnails and ImageData using canvas
+  sliceBtn.addEventListener('click', async ()=>{
+    if (!parsedPlist){ log('No plist parsed'); return; }
+    if (!spriteImage){ log('No sprite sheet uploaded — thumbnails will be blanks'); }
+    if (!framesArr || !framesArr.length){ buildFramesArray(parsedPlist); }
+    const scale = parseFloat(scaleInput.value || 1);
+    const meta = parsedPlist.metadata || {};
+    let sheetW = 1024, sheetH = 1024;
+    if (meta.size){ const m = meta.size.replace(/[{}]/g,'').split(','); sheetW = parseInt(m[0],10); sheetH = parseInt(m[1],10); }
+    // Use canvas to extract slices
+    const tmpCanvas = document.createElement('canvas');
+    const tctx = tmpCanvas.getContext('2d');
+    if (spriteImage){
+      tmpCanvas.width = spriteImage.naturalWidth;
+      tmpCanvas.height = spriteImage.naturalHeight;
+      tctx.drawImage(spriteImage,0,0);
+    } else {
+      tmpCanvas.width = sheetW;
+      tmpCanvas.height = sheetH;
+      tctx.fillStyle = '#000';
+      tctx.fillRect(0,0,tmpCanvas.width,tmpCanvas.height);
+    }
+    let embedded = 0;
+    for (let i=0;i<framesArr.length;i++){
+      const item = framesArr[i];
+      const rectStr = item.data.textureRect || item.data.textureRect || item.data.textureRect;
+      // textureRect usually in form "{{x,y},{w,h}}"
+      const m = ('' + item.data.textureRect).match(/\{\{?(-?\d+),\s*(-?\d+)\}?,\{?(\d+),\s*(\d+)\}?\}/);
+      if (m){
+        const x = parseInt(m[1],10);
+        const y = parseInt(m[2],10);
+        const w = parseInt(m[3],10);
+        const h = parseInt(m[4],10);
+        // create small canvas
+        const wS = Math.max(1, Math.round(w * scale));
+        const hS = Math.max(1, Math.round(h * scale));
+        const c = document.createElement('canvas');
+        c.width = wS; c.height = hS;
+        const cctx = c.getContext('2d');
+        if (spriteImage){
+          // draw scaled subsection
+          cctx.drawImage(spriteImage, x, y, w, h, 0, 0, wS, hS);
+          const imageData = cctx.getImageData(0,0,wS,hS);
+          item.imageData = imageData;
+          // make thumbnail blob
+          const thumb = await new Promise(res=>c.toBlob(res,'image/png'));
+          item.thumbnail = thumb;
+          embedded++;
+        } else {
+          // generate placeholder thumbnail with name
+          cctx.fillStyle = '#041423';
+          cctx.fillRect(0,0,wS,hS);
+          cctx.fillStyle = '#7c3aed';
+          cctx.font = `${Math.max(10, Math.round(hS*0.12))}px Inter, monospace`;
+          cctx.textAlign = 'center';
+          cctx.fillText(item.name, wS/2, hS/2);
+          const imageData = cctx.getImageData(0,0,wS,hS);
+          item.imageData = imageData;
+          item.thumbnail = await new Promise(res=>c.toBlob(res,'image/png'));
+        }
+      } else {
+        // fallback: produce a small placeholder (96x32)
+        const c = document.createElement('canvas'); c.width=96; c.height=32;
+        const cctx = c.getContext('2d');
+        cctx.fillStyle='#041423'; cctx.fillRect(0,0,96,32);
+        cctx.fillStyle='#7c3aed'; cctx.font='10px Inter, monospace'; cctx.textAlign='center';
+        cctx.fillText(item.name,48,18);
+        item.thumbnail = await new Promise(res=>c.toBlob(res,'image/png'));
+      }
+      updateProgress(Math.round((i+1)/framesArr.length*100));
+    }
+    embeddedCountEl.textContent = 'embedded: ' + embedded;
+    framesCountEl.textContent = 'frames: ' + framesArr.length;
+    renderFramesGrid();
+    // draw full sheet preview if sheet exists
+    if (spriteImage){
+      previewCanvas.width = spriteImage.naturalWidth;
+      previewCanvas.height = spriteImage.naturalHeight;
+      previewCtx.clearRect(0,0,previewCanvas.width,previewCanvas.height);
+      previewCtx.drawImage(spriteImage,0,0);
+      // overlay rectangles for each frame
+      previewCtx.strokeStyle = 'rgba(124,58,237,0.8)';
+      previewCtx.lineWidth = 2;
+      for (const it of framesArr){
+        const m = ('' + it.data.textureRect).match(/\{\{?(-?\d+),\s*(-?\d+)\}?,\{?(\d+),\s*(\d+)\}?\}/);
+        if (m){
+          const x = parseInt(m[1],10);
+          const y = parseInt(m[2],10);
+          const w = parseInt(m[3],10);
+          const h = parseInt(m[4],10);
+          previewCtx.strokeRect(x+0.5,y+0.5,w,h);
+          if (showNamesCheckbox.checked){
+            previewCtx.fillStyle = 'rgba(0,0,0,0.6)';
+            previewCtx.fillRect(x, y-18, Math.min(240,w), 18);
+            previewCtx.fillStyle = '#fff';
+            previewCtx.font = '12px Inter, monospace';
+            previewCtx.fillText(it.name, x+6, y-4);
+          }
+        }
+      }
+    }
+    log('Slicing complete. Thumbnails and imageData created.');
+    updateProgress(0);
+  });
+
+  // render frames grid
+  function renderFramesGrid(){
+    framesGrid.innerHTML = '';
+    for (let i=0;i<framesArr.length;i++){
+      const it = framesArr[i];
+      const div = document.createElement('div');
+      div.className = 'frame';
+      div.dataset.index = i;
+      div.innerHTML = `
+        <div class="handle" title="drag"></div>
+        <img src="${it.thumbnail ? URL.createObjectURL(it.thumbnail) : ''}" alt="${it.name}" />
+        <div style="flex:1;min-width:0">
+          <div class="title">${it.name}</div>
+          <div class="meta">${it.data.spriteSize || ''} — ${it.data.textureRect || ''}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+          <label style="font-size:12px;color:var(--muted)"><input type="checkbox" class="inc" ${it.include ? 'checked' : ''} /> include</label>
+          <button class="btn-ghost btn-thumb" data-i="${i}" title="zoom">zoom</button>
+        </div>
+      `;
+      framesGrid.appendChild(div);
+      // revoke objectURLs when removed — handled when grid re-renders next run; fine for now
+    }
+    // attach checkbox listeners
+    framesGrid.querySelectorAll('.inc').forEach(chk=>{
+      chk.addEventListener('change', (e)=>{
+        const idx = parseInt(e.target.closest('.frame').dataset.index,10);
+        framesArr[idx].include = e.target.checked;
+      });
+    });
+    // zoom buttons
+    framesGrid.querySelectorAll('.btn-thumb').forEach(b=>{
+      b.addEventListener('click', async (e)=>{
+        const idx = parseInt(e.target.dataset.i,10);
+        const it = framesArr[idx];
+        if (!it.imageData){
+          log('No imageData for', it.name);
+          return;
+        }
+        // open simple preview (new window)
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = it.imageData.width;
+        tempCanvas.height = it.imageData.height;
+        tempCanvas.getContext('2d').putImageData(it.imageData,0,0);
+        const dataUrl = tempCanvas.toDataURL('image/png');
+        const w = window.open('');
+        w.document.title = it.name;
+        w.document.body.style.margin='0';
+        const img = w.document.createElement('img');
+        img.src = dataUrl;
+        img.style.maxWidth='100%';
+        img.style.display='block';
+        w.document.body.appendChild(img);
+      });
+    });
+
+    // make grid sortable
+    if (sortable) sortable.destroy();
+    sortable = Sortable.create(framesGrid, {
+      handle: '.handle',
+      animation: 150,
+      onEnd: (evt)=>{
+        const from = evt.oldIndex;
+        const to = evt.newIndex;
+        const moved = framesArr.splice(from,1)[0];
+        framesArr.splice(to,0,moved);
+        renderFramesGrid(); // re-render to update indices
+      }
+    });
+  }
+
+  // progress helpers
+  function updateProgress(pct){
+    progressBar.style.width = pct + '%';
+    progressPct.textContent = pct + '%';
+  }
+
+  // select/deselect/invert
+  selectAllBtn.addEventListener('click', ()=>{ framesArr.forEach(f=>f.include=true); renderFramesGrid(); });
+  deselectAllBtn.addEventListener('click', ()=>{ framesArr.forEach(f=>f.include=false); renderFramesGrid(); });
+  invertBtn.addEventListener('click', ()=>{ framesArr.forEach(f=>f.include=!f.include); renderFramesGrid(); });
+
+  // Export PSD: build PSD with image layers + top preserved plist text layer
+  generateBtn.addEventListener('click', async ()=>{
+    if (!parsedPlist) { log('Parse a plist first'); return; }
+    const selected = framesArr.filter(f=>f.include);
+    if (!selected.length){ log('No frames selected'); return; }
+    log('Preparing PSD export with', selected.length, 'embedded layers...');
+
+    // Try to build PSD with ag-psd using imageData arrays
+    try{
+      const meta = parsedPlist.metadata || {};
+      let canvasW = 1024, canvasH = 1024;
+      if (meta.size){ const m = meta.size.replace(/[{}]/g,'').split(','); canvasW = parseInt(m[0],10); canvasH = parseInt(m[1],10); }
+      // Compose children: bottom layers first (so first in array will be bottom)
+      const children = [];
+      let layerIndex = 0;
+      const prefix = prefixInput.value || '';
+      for (const it of selected){
+        const img = it.imageData;
+        // convert ImageData.data (Uint8ClampedArray) to Uint8Array (ag-psd expects raw bytes)
+        const rgba = new Uint8Array(img.data.buffer.slice(0));
+        // ag-psd's expected property name is "imageData" with properties width,height,data (Uint8Array)
+        const layer = {
+          type: 'layer',
+          name: `${prefix}${it.name}`,
+          left: 0,
+          top: 0,
+          right: img.width,
+          bottom: img.height,
+          visible: true,
+          opacity: 255,
+          imageData: {
+            width: img.width,
+            height: img.height,
+            data: rgba
+          }
+        };
+        children.push(layer);
+        layerIndex++;
+        updateProgress(Math.round(layerIndex / selected.length * 100));
       }
 
-      // layers array: each layer is a simple text layer using ag-psd text engine format
-      const layers = [];
-
-      // reverse order so first frame is bottom layer
-      for (const name of frameKeys.reverse()){
-        const f = framesDict[name];
-        const text = [
-          name,
-          'spriteSize: ' + (f.spriteSize || ''),
-          'spriteOffset: ' + (f.spriteOffset || ''),
-          'textureRect: ' + (f.textureRect || ''),
-          'textureRotated: ' + (f.textureRotated === true ? 'true' : 'false')
-        ].join('\\n');
-
-        // simple text layer object suitable for ag-psd
-        layers.push({
-          name,
-          text: {
-            // ag-psd supports a text property with raw text content; the structure below is minimal
-            value: text,
-            engineData: {
-              // minimal engine data so Photoshop recognizes a text layer
-              "ResourceDict": {},
-              "Styles": {},
-              "Version": 1
-            }
-          },
-          top: 0, left: 0, right: canvasSize.width, bottom: canvasSize.height,
-          // mark as visible
-          visible: true
+      // optionally embed original plist as a top text layer
+      if (embedPlistCheckbox.checked){
+        children.push({
+          type: 'layer',
+          name: 'original-plist.plist (preserved)',
+          left: 0, top:0, right: canvasW, bottom: Math.min(1024, Math.max(200, canvasH)),
+          visible: true, opacity: 255,
+          text: { value: plistEl.value || '', engineData: { ResourceDict: {}, Styles:{}, Version:1 } }
         });
       }
 
-      // top preserved layer containing the full plist (raw)
-      layers.push({
-        name: 'original-plist.plist (preserved)',
-        text: {
-          value: plistText,
-          engineData: {
-            "ResourceDict": {},
-            "Styles": {},
-            "Version": 1
-          }
-        },
-        top: 0, left: 0, right: canvasSize.width, bottom: canvasSize.height,
-        visible: true
-      });
-
-      // Compose PSD root object for ag-psd
-      const psd = {
-        width: canvasSize.width,
-        height: canvasSize.height,
-        resources: {},
-        children: layers.map(l => {
-          // ag-psd expects children with type 'layer' and possibly a text property
-          const layer = {
-            type: 'layer',
-            name: l.name,
-            left: l.left,
-            top: l.top,
-            right: l.right,
-            bottom: l.bottom,
-            visible: l.visible,
-            opacity: 255,
-            text: l.text // ag-psd will write a text layer block when text is present
-          };
-          return layer;
-        })
+      const psdObj = {
+        width: canvasW,
+        height: canvasH,
+        children
       };
 
-      return psd;
+      log('Serializing PSD (ag-psd)...');
+      // agpsd.writePsd returns ArrayBuffer
+      const arr = agpsd.writePsd(psdObj, {quality:8});
+      const blob = new Blob([arr], {type: 'application/octet-stream'});
+      downloadBlob('plist_embedded.psd', blob);
+      log('PSD exported: plist_embedded.psd');
+      updateProgress(0);
+    }catch(err){
+      log('PSD export failed, falling back to ZIP. Error:', err && err.message ? err.message : String(err));
+      await fallbackZipExport();
+      updateProgress(0);
+    }
+  });
+
+  // fallback ZIP export: produces a ZIP with PSD (text-only), thumbnails, preview PNG, and plist
+  async function fallbackZipExport(){
+    const zip = new JSZip();
+    zip.file('sheet.plist', plistEl.value || '');
+    // add thumbnails
+    const folder = zip.folder('thumbnails');
+    let idx = 0;
+    for (const it of framesArr){
+      if (!it.include) continue;
+      if (it.thumbnail) folder.file(`${idx}_${sanitizeName(it.name)}.png`, await it.thumbnail.arrayBuffer());
+      idx++;
+    }
+    // composite preview PNG: draw a grid of thumbnails
+    const comp = document.createElement('canvas');
+    const cols = 6;
+    const thumbW = 128, thumbH = 64;
+    const rows = Math.ceil(idx / cols) || 1;
+    comp.width = Math.max(512, cols * thumbW);
+    comp.height = Math.max(512, rows * thumbH);
+    const cctx = comp.getContext('2d'); cctx.fillStyle='#071827'; cctx.fillRect(0,0,comp.width,comp.height);
+    let i=0;
+    for (const it of framesArr){
+      if (!it.include) continue;
+      const tx = (i % cols) * thumbW;
+      const ty = Math.floor(i/cols) * thumbH;
+      if (it.thumbnail){
+        const imgUrl = URL.createObjectURL(it.thumbnail);
+        // draw via temp image
+        await new Promise(res=>{
+          const im = new Image(); im.onload = ()=>{
+            cctx.drawImage(im, tx, ty, thumbW, thumbH);
+            URL.revokeObjectURL(imgUrl);
+            res();
+          };
+          im.src = imgUrl;
+        });
+      } else {
+        cctx.fillStyle='#073042'; cctx.fillRect(tx,ty,thumbW,thumbH);
+        cctx.fillStyle='#7c3aed'; cctx.fillText(it.name, tx+8, ty+32);
+      }
+      i++;
+    }
+    const previewBlob = await new Promise(res=>comp.toBlob(res,'image/png'));
+    zip.file('preview.png', await previewBlob.arrayBuffer());
+
+    // minimal text-only PSD as fallback (use ag-psd with text layers only)
+    try{
+      const children = [];
+      for (const it of framesArr){
+        if (!it.include) continue;
+        children.push({
+          type:'layer',
+          name: it.name,
+          left:0,top:0,right:1024,bottom:200,visible:true,opacity:255,
+          text: { value: `${it.name}\n${JSON.stringify(it.data,null,0)}`, engineData: { ResourceDict:{}, Styles:{}, Version:1 } }
+        });
+      }
+      children.push({
+        type:'layer',
+        name:'original-plist.plist',
+        left:0,top:0,right:1024,bottom:1024,
+        visible:true,opacity:255,
+        text: { value: plistEl.value || '', engineData: { ResourceDict:{}, Styles:{}, Version:1 } }
+      });
+      const psdObj = { width:1024, height:1024, children };
+      const arr = agpsd.writePsd(psdObj, {quality:8});
+      zip.file('plist_fallback.psd', arr);
+    }catch(e){
+      log('Failed to create text-only PSD fallback:', e && e.message ? e.message : String(e));
     }
 
-    function downloadBlob(filename, blob){
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    }
+    const content = await zip.generateAsync({type:'blob'}, (meta)=>{ updateProgress(Math.round(meta.percent)); });
+    downloadBlob('plist_assets.zip', content);
+    log('ZIP exported: plist_assets.zip');
+    updateProgress(0);
+  }
 
-    genBtn.addEventListener('click', async ()=>{
-      const txt = plistEl.value.trim();
-      if (!txt) { logMsg('No plist text found'); return; }
-      logMsg('Parsing plist...');
-      let parsed;
-      try{
-        parsed = parsePlistXml(txt);
-      }catch(e){
-        logMsg('Error parsing plist:', e.message);
-        return;
-      }
-      logMsg('Building PSD structure...');
-      const psdJson = buildPsdFromPlist(txt, parsed);
-      logMsg('Serializing PSD binary (this may take a few seconds)...');
+  downloadZipBtn.addEventListener('click', async ()=>{
+    await fallbackZipExport();
+  });
 
-      try{
-        // writePsd returns an ArrayBuffer
-        const arr = agpsd.writePsd(psdJson, {quality: 8});
-        const blob = new Blob([arr], {type: 'application/octet-stream'});
-        downloadBlob('plist_preserved.psd', blob);
-        logMsg('Downloaded plist_preserved.psd');
-      }catch(err){
-        logMsg('ag-psd error: ', err && err.message ? err.message : String(err));
-      }
-    });
+  // helper: sanitize file name
+  function sanitizeName(s){ return (''+s).replace(/[^\w\-_. ]+/g,'').substring(0,120); }
 
-    dlRaw.addEventListener('click', ()=>{
-      const txt = plistEl.value.trim();
-      if (!txt) { logMsg('No plist to download'); return; }
-      const blob = new Blob([txt], {type:'application/xml'});
-      downloadBlob('sheet.plist', blob);
-      logMsg('Downloaded sheet.plist');
-    });
+  // download helper
+  function downloadBlob(filename, blob){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 5000);
+  }
 
-    previewBtn.addEventListener('click', ()=>{
-      const txt = plistEl.value.trim();
-      if (!txt) { framesBox.textContent = 'No plist'; return; }
-      let parsed;
-      try{ parsed = parsePlistXml(txt); } catch(e){ framesBox.textContent = 'Parse error: ' + e.message; return; }
-      const frames = parsed.frames || {};
-      const keys = Object.keys(frames);
-      if (!keys.length){ framesBox.textContent = 'No frames found'; return; }
-      framesBox.innerHTML = '';
-      for (const k of keys){
-        const f = frames[k];
-        const div = document.createElement('div');
-        div.style.padding = '8px 6px';
-        div.style.borderBottom = '1px solid rgba(255,255,255,0.02)';
-        div.innerHTML = `<strong>${k}</strong><div class="small" style="color:var(--muted);margin-top:6px">
-          spriteSize: ${f.spriteSize || ''} — spriteOffset: ${f.spriteOffset || ''} — textureRect: ${f.textureRect || ''}</div>`;
-        framesBox.appendChild(div);
-      }
-      logMsg('Preview rendered: ' + keys.length + ' frames');
-    });
+  // small helper to read .plist file drop or file open into textarea
+  plistEl.addEventListener('dragover', e=>e.preventDefault());
+  plistEl.addEventListener('drop', e=>{
+    e.preventDefault();
+    const f = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      plistEl.value = reader.result;
+      log('Loaded plist from file: ' + f.name);
+    };
+    reader.readAsText(f);
+  });
 
-    // support dropping a .plist file into the textarea
-    plistEl.addEventListener('dragover', e => e.preventDefault());
-    plistEl.addEventListener('drop', e=>{
-      e.preventDefault();
-      const f = e.dataTransfer.files && e.dataTransfer.files[0];
-      if (!f) return;
-      const reader = new FileReader();
-      reader.onload = () => { plistEl.value = reader.result; logMsg('Loaded plist from file: ' + f.name); };
-      reader.readAsText(f);
-    });
+  // neat UX: when user pastes the large sample plist, auto-parse
+  plistEl.addEventListener('paste', (e)=>{
+    setTimeout(()=>{ try{ parseBtn.click(); }catch(_){} }, 120);
+  });
 
-    // basic auto-fill example: if user pastes the sample (from your message) this will already work
-    // done
-  </script>
+  // maintain object URL cleanup for thumbnails on re-render (simple strategy: revoke old ones on regeneration)
+  // We'll store created object URLs and revoke them when new thumbnails are created
+  const _createdURLs = new Set();
+  const originalCreateObjectURL = URL.createObjectURL;
+  // intercept createObjectURL only to track blobs we create below (we call URL.createObjectURL when building <img src> earlier)
+  // but to keep code robust, we'll clean up by revoking on re-render: revoke all in set when appropriate
+  // We'll add them to set when called programmatically in renderFramesGrid
+  const origCreate = URL.createObjectURL;
+  // override to capture (only in this page)
+  URL.createObjectURL = function(obj){
+    const u = origCreate.call(URL, obj);
+    _createdURLs.add(u);
+    return u;
+  };
+
+  // when window unload, revoke any leftover URLs
+  window.addEventListener('beforeunload', ()=>{
+    for (const u of _createdURLs) try{ URL.revokeObjectURL(u); }catch(_){}
+  });
+
+  // small UI enhancement: update thumbnail URLs when re-rendering, but revoke previously used ones
+  // (we will revoke everything before render to avoid leaks)
+  function clearCreatedURLs(){
+    for (const u of _createdURLs) try{ URL.revokeObjectURL(u); }catch(_){}
+    _createdURLs.clear();
+  }
+
+  // patch renderFramesGrid to revoke early (monkey patching)
+  (function(){
+    const original = renderFramesGrid;
+    renderFramesGrid = function(){
+      clearCreatedURLs();
+      original();
+    };
+  })();
+
+  // initial sample placeholder
+  plistEl.placeholder = `Paste your plist XML here — example pasted from your message will parse correctly.`;
+
+  // quick parse on page load if user had pasted before navigating away (no storage here)
+  log('Interactive plist → PSD ready.');
+</script>
 </body>
 </html>
